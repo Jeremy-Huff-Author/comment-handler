@@ -5,15 +5,29 @@ const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const notionDatabaseId = process.env.NOTION_DATABASE_ID;
 
 exports.handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': 'https://jeremythuff.page',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers,
+      body: ''
+    };
+  }
+
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      body: 'Method Not Allowed'
+      headers,
+      body: JSON.stringify({ error: 'Method Not Allowed' })
     };
   }
 
   try {
-    // Parse form-encoded body
     const formData = querystring.parse(event.body);
 
     const post_id = formData.post_id;
@@ -31,7 +45,7 @@ exports.handler = async (event) => {
         'commenter_email': { email: commenter_email },
         'comment_text': { rich_text: [{ text: { content: comment_text } }] },
         'comment_date': { date: { start: comment_date } },
-        'comment_approved': { checkbox: false },
+        'comment_approved': { checkbox: false }
       }
     };
 
@@ -39,6 +53,7 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({ message: 'Comment submitted successfully!' })
     };
 
@@ -46,6 +61,7 @@ exports.handler = async (event) => {
     console.error('Error submitting comment to Notion:', error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ error: 'Failed to submit comment.' })
     };
   }
