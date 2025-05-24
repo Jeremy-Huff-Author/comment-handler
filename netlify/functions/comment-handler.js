@@ -1,5 +1,4 @@
 const { Client } = require('@notionhq/client');
-const querystring = require('querystring');
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const notionDatabaseId = process.env.NOTION_DATABASE_ID;
@@ -28,12 +27,12 @@ exports.handler = async (event) => {
   }
 
   try {
-    const formData = querystring.parse(event.body);
+    const requestBody = JSON.parse(event.body);
 
-    const post_id = formData.post_id;
-    const commenter_name = formData.commenter_name;
-    const commenter_email = formData.commenter_email;
-    const comment_text = formData.comment_text;
+    const post_id = requestBody.post_id;
+    const commenter_name = requestBody.commenter_name;
+    const commenter_email = requestBody.commenter_email;
+    const comment_text = requestBody.comment_text;
 
     const comment_date = new Date().toISOString();
 
