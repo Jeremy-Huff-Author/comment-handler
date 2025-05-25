@@ -32,7 +32,7 @@ exports.handler = async (event) => {
         database_id: databaseId,
       },
       properties: {
- 'Contact Name': {
+        'Contact Name': {
           title: [
             {
               text: {
@@ -45,7 +45,7 @@ exports.handler = async (event) => {
           email: email,
         },
         'Status': { // Add the Status property
- 'select': { name: 'Active' }, // Set the default status to Active
+          'select': { name: 'Active' }, // Set the default status to Active
         },
       },
       // Ensure other properties from your Notion database are included here if required and have default values set in Notion
