@@ -1,4 +1,5 @@
 const { Client } = require('@notionhq/client');
+const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -18,8 +19,29 @@ exports.handler = async (event) => {
 
   try {
     const data = JSON.parse(event.body);
-    const { name, email } = data;
+    const { name, email, recaptchaToken } = data;
 
+    // reCAPTCHA verification
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`;
+
+    const recaptchaResponse = await fetch(verificationUrl, {
+      method: 'POST',
+    });
+
+    const recaptchaData = await recaptchaResponse.json();
+
+    if (!recaptchaData.success || recaptchaData.score < 0.5) {
+      console.error('reCAPTCHA verification failed:', recaptchaData);
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': 'https://jeremythuff.page',
+        },
+        body: JSON.stringify({ error: 'reCAPTCHA verification failed.' }),
+      };
+    }
+    
     if (!name || !email) {
       return { statusCode: 400, body: 'Missing name or email' };
     }

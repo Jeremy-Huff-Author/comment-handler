@@ -1,4 +1,5 @@
 const { Client } = require('@notionhq/client');
+const fetch = require('node-fetch');
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const notionDatabaseId = process.env.NOTION_DATABASE_ID;
@@ -28,6 +29,27 @@ exports.handler = async (event) => {
 
   try {
     const requestBody = JSON.parse(event.body);
+    const { recaptchaToken } = requestBody;
+
+    const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
+
+    const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecretKey}&response=${recaptchaToken}`;
+
+    const recaptchaResponse = await fetch(verificationUrl, { method: 'POST' });
+    const recaptchaData = await recaptchaResponse.json();
+
+    if (!recaptchaData.success || recaptchaData.score < 0.5) {
+      console.error('reCAPTCHA verification failed:', recaptchaData);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'reCAPTCHA verification failed.' })
+      };
+    }
+
+    // If reCAPTCHA verification is successful, proceed with comment submission
+
+
 
     const post_id = requestBody.post_id;
     const commenter_name = requestBody.commenter_name;
