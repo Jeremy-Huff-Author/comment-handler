@@ -2,7 +2,18 @@ const { Client } = require('@notionhq/client');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    // Handle OPTIONS requests for CORS preflight
+    if (event.httpMethod === 'OPTIONS') {
+      return {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': 'https://jeremythuff.page',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      };
+    }
+    return { statusCode: 405, body: 'Method Not Allowed', headers: { 'Access-Control-Allow-Origin': 'https://jeremythuff.page' } };
   }
 
   try {
@@ -50,12 +61,20 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': 'https://jeremythuff.page',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
       body: JSON.stringify({ message: 'Successfully added to mailing list!' }),
     };
   } catch (error) {
     console.error('Error adding to mailing list:', error);
     return {
       statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': 'https://jeremythuff.page',
+      },
       body: JSON.stringify({ error: 'Failed to add to mailing list.' }),
     };
   }
