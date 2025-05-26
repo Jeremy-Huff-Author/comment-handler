@@ -48,9 +48,9 @@ exports.handler = async (event) => {
 
     // If reCAPTCHA verification is successful, proceed with comment submission
     const post_id = requestBody.post_id;
-    const commenter_name = requestBody.commenter_name;
-    const commenter_email = requestBody.commenter_email;
-    const comment_text = requestBody.comment_text;
+    const commenter_name = requestBody.name;
+    const commenter_email = requestBody.email;
+    const comment_text = requestBody.comment;
 
     const comment_date = new Date().toISOString();
 
