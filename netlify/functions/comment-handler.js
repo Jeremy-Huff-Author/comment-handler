@@ -6,26 +6,23 @@ const notionDatabaseId = process.env.NOTION_DATABASE_ID;
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': 'https://jeremythuff.page',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      headers,
-      body: ''
-    };
+  switch (event.httpMethod) {
+    case 'OPTIONS':
+      return { statusCode: 204, headers, body: '' };
+    case 'POST':
+      return await handlePost(event, notion, notionDatabaseId, headers);
+    case 'GET':
+      return await handleGet(event, notion, notionDatabaseId, headers);
+    default:
+      return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
+};
 
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Method Not Allowed' })
-    };
-  }
-
+async function handlePost(event, notion, notionDatabaseId, headers) {
   try {
     const requestBody = JSON.parse(event.body);
     const { recaptchaToken } = requestBody;
@@ -82,4 +79,33 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: 'Failed to submit comment.' })
     };
   }
-};
+}
+
+async function handleGet(event, notion, notionDatabaseId, headers) {
+  try {
+    const { post_id } = event.queryStringParameters;
+
+    if (!post_id) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Missing post_id query parameter.' })
+      };
+    }
+
+    const response = await notion.databases.query({
+      database_id: notionDatabaseId,
+      filter: {
+        property: 'post_id',
+        url: { equals: post_id },
+      },
+    });
+
+    return { statusCode: 200, headers, body: JSON.stringify(response.results) };
+  } catch (error) {
+    console.error('Error fetching comments from Notion:', error);
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Failed to fetch comments.' }) };
+  }
+}
+
+
