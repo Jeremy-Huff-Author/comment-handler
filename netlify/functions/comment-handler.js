@@ -101,7 +101,17 @@ async function handleGet(event, notion, notionDatabaseId, headers) {
       },
     });
 
-    return { statusCode: 200, headers, body: JSON.stringify(response.results) };
+    const comments = response.results.map(result => {
+      const properties = result.properties;
+      return {
+        comment: properties.comment_text.rich_text[0].text.content,
+        name: properties.commenter_name.rich_text[0].text.content,
+        date: properties.comment_date.date.start,
+      };
+    });
+
+
+    return { statusCode: 200, headers, body: JSON.stringify(comments) };
   } catch (error) {
     console.error('Error fetching comments from Notion:', error);
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Failed to fetch comments.' }) };
