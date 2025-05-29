@@ -3,6 +3,12 @@ const { Client } = require('@notionhq/client');
 
 // Main handler function for the Netlify function
 exports.handler = async (event, context) => {
+  const headers = {
+    'Access-Control-Allow-Origin': 'https://jeremythuff.page',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  };
+
   // Initialize the Notion Client with the API key from environment variables
   const notion = new Client({ auth: process.env.NOTION_API_KEY });
   // Get the Notion database ID for blog posts from environment variables
@@ -69,9 +75,7 @@ exports.handler = async (event, context) => {
     // If a post_id was provided and a matching post was found, return the single post
     return {
       statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       // Stringify the first element (the matching post)
       body: JSON.stringify(blogPosts[0]),
     };
@@ -79,9 +83,7 @@ exports.handler = async (event, context) => {
     // If no post_id was provided and blog posts were found, return all blog posts
     return {
       statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       // Stringify the array of blog posts
       body: JSON.stringify(blogPosts),
     };
@@ -89,9 +91,7 @@ exports.handler = async (event, context) => {
     // If no blog posts were found (either for a specific ID or in general)
     return {
       statusCode: 404,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({ message: "No blog post(s) found" }),
     };
   }
