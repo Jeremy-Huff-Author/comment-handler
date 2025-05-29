@@ -73,25 +73,22 @@ exports.handler = async (event, context) => {
     }
 
     let content = '';
-    if (post_id && post_id === event.queryStringParameters.post_id) {
-      // Fetch blocks for the specific post requested
-      const blocksResponse = await notion.blocks.children.list({
-        block_id: pageId,
-        page_size: 100, // Adjust page size as needed
-      });
-      console.log("blocksResponse", blocksResponse);
-      // Placeholder for markdown conversion logic
-      // You'll need to iterate through blocksResponse.results
-      // and convert different block types (paragraph, heading, image, etc.) to markdown
-      content = blocksResponse.results.map(block => {
-        if (block.type === 'paragraph' && block.paragraph.rich_text.length > 0) {
-          return block.paragraph.rich_text[0].plain_text;
-        }
-        // Add more block type conversions here
-        return ''; // Handle other block types or skip
-      }).join('\n\n'); // Join paragraphs with double newline
-
-    }
+    // Fetch blocks for the specific post requested
+    const blocksResponse = await notion.blocks.children.list({
+      block_id: pageId,
+      page_size: 100, // Adjust page size as needed
+    });
+    console.log("blocksResponse", blocksResponse);
+    // Placeholder for markdown conversion logic
+    // You'll need to iterate through blocksResponse.results
+    // and convert different block types (paragraph, heading, image, etc.) to markdown
+    content = blocksResponse.results.map(block => {
+      if (block.type === 'paragraph' && block.paragraph.rich_text.length > 0) {
+        return block.paragraph.rich_text[0].plain_text;
+      }
+      // Add more block type conversions here
+      return ''; // Handle other block types or skip
+    }).join('\n\n'); // Join paragraphs with double newline
 
     return {
       id: pageId,
