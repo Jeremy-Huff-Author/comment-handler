@@ -58,6 +58,8 @@ exports.handler = async (event, context) => {
     filter
   });
 
+  console.log('Notion API Response:', JSON.stringify(response, null, 2)); // Log the Notion API response
+
   // Process the results to fetch block content if a specific post_id was requested
  let blogPosts = [];
  if (response.results && response.results.length > 0) {
