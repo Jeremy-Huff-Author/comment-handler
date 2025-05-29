@@ -59,7 +59,9 @@ exports.handler = async (event, context) => {
   });
 
   // Process the results to fetch block content if a specific post_id was requested
-  const processedBlogPosts = await Promise.all(response.results.map(async (page) => {
+ let blogPosts = [];
+ if (response.results && response.results.length > 0) {
+    blogPosts = await Promise.all(response.results.map(async (page) => {
     // console.log('Post object:', JSON.stringify(page, null, 2)); // Add this line to log the post object
     const pageId = page.id;
     const properties = page.properties;
@@ -99,9 +101,10 @@ exports.handler = async (event, context) => {
       content: content, // Include the fetched content
     };
   }));
+ }
 
   // Handle the response based on whether a specific post_id was requested
-  if (post_id && processedBlogPosts.length > 0) {
+  if (post_id && blogPosts.length > 0) {
     return {
       statusCode: 200,
       headers,
