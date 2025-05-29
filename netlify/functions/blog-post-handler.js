@@ -80,14 +80,48 @@ exports.handler = async (event, context) => {
     });
     console.log("blocksResponse", blocksResponse);
     // Placeholder for markdown conversion logic
-    // You'll need to iterate through blocksResponse.results
-    // and convert different block types (paragraph, heading, image, etc.) to markdown
-    content = blocksResponse.results.map(block => {
-      if (block.type === 'paragraph' && block.paragraph.rich_text.length > 0) {
-        return block.paragraph.rich_text[0].plain_text;
+    // Convert Notion blocks to Markdown
+    content = blocksResponse.results.map(block => { // Use map for initial transformation
+      let blockContent = '';
+      switch (block.type) {
+        case 'paragraph':
+          blockContent = block.paragraph.rich_text.map(rt => rt.plain_text).join('');
+          break;
+        case 'heading_1':
+          blockContent = '# ' + block.heading_1.rich_text.map(rt => rt.plain_text).join('');
+          break;
+        case 'heading_2':
+          blockContent = '## ' + block.heading_2.rich_text.map(rt => rt.plain_text).join('');
+          break;
+        case 'heading_3':
+          blockContent = '### ' + block.heading_3.rich_text.map(rt => rt.plain_text).join('');
+          break;
+        case 'bulleted_list_item':
+          blockContent = '* ' + block.bulleted_list_item.rich_text.map(rt => rt.plain_text).join('');
+          break;
+        case 'numbered_list_item':
+          // Basic numbering, doesn't handle nested lists
+          blockContent = '1. ' + block.numbered_list_item.rich_text.map(rt => rt.plain_text).join('');
+          break;
+        case 'to_do':
+          blockContent = `- [${block.to_do.checked ? 'x' : ' '}] ` + block.to_do.rich_text.map(rt => rt.plain_text).join('');
+          break;
+        case 'quote':
+          blockContent = '> ' + block.quote.rich_text.map(rt => rt.plain_text).join('');
+          break;
+        case 'image':
+          const imageUrl = block.image.external?.url || block.image.file?.url;
+          if (imageUrl) {
+            blockContent = `![Image](${imageUrl})`;
+          }
+          break;
+        case 'code':
+          const codeContent = block.code.rich_text.map(rt => rt.plain_text).join('');
+          const codeLanguage = block.code.language || '';
+          blockContent = ''
       }
       // Add more block type conversions here
-      return ''; // Handle other block types or skip
+      return blockContent; // Handle other block types or skip
     }).join('\n\n'); // Join paragraphs with double newline
 
     return {
