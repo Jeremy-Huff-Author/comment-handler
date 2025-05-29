@@ -79,7 +79,7 @@ exports.handler = async (event, context) => {
         block_id: pageId,
         page_size: 100, // Adjust page size as needed
       });
-
+      console.log("blocksResponse", blocksResponse);
       // Placeholder for markdown conversion logic
       // You'll need to iterate through blocksResponse.results
       // and convert different block types (paragraph, heading, image, etc.) to markdown
