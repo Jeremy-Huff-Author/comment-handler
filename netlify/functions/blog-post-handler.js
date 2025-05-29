@@ -58,26 +58,50 @@ exports.handler = async (event, context) => {
     filter
   });
 
-  const blogPosts = response.results.map(page => {
-    console.log('Post object:', JSON.stringify(page, null, 2)); // Add this line to log the post object
-    // Map the results from Notion to a more usable format
+  // Process the results to fetch block content if a specific post_id was requested
+  const processedBlogPosts = await Promise.all(response.results.map(async (page) => {
+    // console.log('Post object:', JSON.stringify(page, null, 2)); // Add this line to log the post object
+    const pageId = page.id;
     const properties = page.properties;
-    let postId = null;
+    let post_id = null;
     if (properties.post_id && properties.post_id.rich_text && properties.post_id.rich_text.length > 0) {
-      postId = properties.post_id.rich_text[0].plain_text;
+      post_id = properties.post_id.rich_text[0].plain_text;
     }
+
+    let content = '';
+    if (post_id && post_id === event.queryStringParameters.post_id) {
+      // Fetch blocks for the specific post requested
+      const blocksResponse = await notion.blocks.children.list({
+        block_id: pageId,
+        page_size: 100, // Adjust page size as needed
+      });
+
+      // Placeholder for markdown conversion logic
+      // You'll need to iterate through blocksResponse.results
+      // and convert different block types (paragraph, heading, image, etc.) to markdown
+      content = blocksResponse.results.map(block => {
+        if (block.type === 'paragraph' && block.paragraph.rich_text.length > 0) {
+          return block.paragraph.rich_text[0].plain_text;
+        }
+        // Add more block type conversions here
+        return ''; // Handle other block types or skip
+      }).join('\n\n'); // Join paragraphs with double newline
+
+    }
+
     return {
+      id: pageId,
       Name: properties.Name.title[0]?.plain_text || '',
-      post_id: postId,
+      post_id: post_id,
       "Publication Date": properties["Publication Date"].date?.start || '',
       Summary: properties.Summary.rich_text[0]?.plain_text || '',
       "Featured Image": properties["Featured Image"].files[0]?.external?.url || properties["Featured Image"].files[0]?.file?.url || '',
+      content: content, // Include the fetched content
     };
-  });
+  }));
 
   // Handle the response based on whether a specific post_id was requested
-  if (post_id && blogPosts.length > 0) {
-    // If a post_id was provided and a matching post was found, return the single post
+  if (post_id && processedBlogPosts.length > 0) {
     return {
       statusCode: 200,
       headers,
@@ -85,11 +109,10 @@ exports.handler = async (event, context) => {
       body: JSON.stringify(blogPosts[0]),
     };
   } else if(blogPosts.length > 0) {
-    // If no post_id was provided and blog posts were found, return all blog posts
     return {
       statusCode: 200,
       headers,
-      // Stringify the array of blog posts
+      // Return all processed blog posts
       body: JSON.stringify(blogPosts),
     };
   } else {
