@@ -59,6 +59,7 @@ exports.handler = async (event, context) => {
   });
 
   const blogPosts = response.results.map(page => {
+    console.log('Post object:', JSON.stringify(page, null, 2)); // Add this line to log the post object
     // Map the results from Notion to a more usable format
     const properties = page.properties;
     let postId = null;
