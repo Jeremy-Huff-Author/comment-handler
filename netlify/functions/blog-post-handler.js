@@ -61,9 +61,13 @@ exports.handler = async (event, context) => {
   const blogPosts = response.results.map(page => {
     // Map the results from Notion to a more usable format
     const properties = page.properties;
+    let postId = null;
+    if (properties.post_id && properties.post_id.rich_text && properties.post_id.rich_text.length > 0) {
+      postId = properties.post_id.rich_text[0].plain_text;
+    }
     return {
       Name: properties.Name.title[0]?.plain_text || '',
-      post_id: properties.post_id.rich_text[0]?.plain_text || '',
+      post_id: postId,
       "Publication Date": properties["Publication Date"].date?.start || '',
       Summary: properties.Summary.rich_text[0]?.plain_text || '',
       "Featured Image": properties["Featured Image"].files[0]?.external?.url || properties["Featured Image"].files[0]?.file?.url || '',
