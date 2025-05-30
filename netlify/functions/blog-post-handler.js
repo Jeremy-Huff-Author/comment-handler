@@ -27,8 +27,8 @@ exports.handler = async (event, context) => {
       and: [
         {
           property: 'post_id',
-          url: {
-            equals: post_id
+          rich_text: {
+            equals: post_id,
           },
         },
         {
@@ -43,10 +43,14 @@ exports.handler = async (event, context) => {
     filter = {
       database_id: databaseId,
       filter: {
-        property: 'Publication Date',
-        date: {
-          on_or_before: currentDate
-        },
+        and: [
+          {
+            property: 'Publication Date',
+            date: {
+              on_or_before: currentDate,
+            },
+          },
+        ]
       },
     }
   }
@@ -125,9 +129,7 @@ exports.handler = async (event, context) => {
     }).join('\n\n'); // Join paragraphs with double newline
 
     return {
-      id: pageId,
       Name: properties.Name.title[0]?.plain_text || '',
-      postId: post_id,
       publicationDate: properties["Publication Date"].date?.start || '',
       summary: properties.Summary.rich_text[0]?.plain_text || '',
       coverImage: page.cover?.file?.url || '', 
