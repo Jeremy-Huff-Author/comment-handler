@@ -41,12 +41,9 @@ exports.handler = async (event, context) => {
     };
   } else {
     filter = {
-      database_id: databaseId,
-      filter: {
-        property: 'Publication Date',
-        date: {
-          on_or_before: currentDate,
-        },
+      property: 'Publication Date',
+      date: {
+                on_or_before: currentDate,
       },
     }
   }
