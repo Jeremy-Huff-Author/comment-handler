@@ -27,8 +27,8 @@ exports.handler = async (event, context) => {
       and: [
         {
           property: 'post_id',
-          rich_text: {
-            equals: post_id,
+          url: {
+            equals: post_id
           },
         },
         {
