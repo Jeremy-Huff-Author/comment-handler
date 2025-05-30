@@ -127,10 +127,11 @@ exports.handler = async (event, context) => {
     return {
       id: pageId,
       Name: properties.Name.title[0]?.plain_text || '',
-      post_id: post_id,
-      "Publication Date": properties["Publication Date"].date?.start || '',
-      Summary: properties.Summary.rich_text[0]?.plain_text || '',
-      "Featured Image": properties["Featured Image"].files[0]?.external?.url || properties["Featured Image"].files[0]?.file?.url || '',
+      postId: post_id,
+      publicationDate: properties["Publication Date"].date?.start || '',
+      summary: properties.Summary.rich_text[0]?.plain_text || '',
+      coverImage: page.cover?.file?.url || '', 
+      customStyles: properties['Custom Styles']?.rich_text[0]?.plain_text || '', 
       content: content, // Include the fetched content
     };
   }));
