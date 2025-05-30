@@ -17,42 +17,15 @@ exports.handler = async (event, context) => {
   // Get the current date in YYYY-MM-DD format
   const currentDate = new Date().toISOString().split('T')[0];
 
-  // Extract the 'post_id' from the query string parameters
-  const { post_id } = event.queryStringParameters;
-
-  // Define the filter for the Notion database query
-  let filter;
-  if (post_id) {
-    filter = {
-      and: [
-        {
-          property: 'post_id',
-          rich_text: {
-            equals: post_id,
-          },
-        },
-        {
-          property: 'Publication Date',
-          date: {
-            on_or_before: currentDate,
-          },
-        },
-      ],
-    };
-  } else {
-    filter = {
-      property: 'Publication Date',
-      date: {
-                on_or_before: currentDate,
-      },
-    }
-  }
-
   // Query the Notion database
-
   const response = await notion.databases.query({
     database_id: databaseId,
-    filter
+    filter: {
+      property: 'Publication Date',
+      date: {
+        on_or_before: currentDate,
+      },
+    }
   });
 
   // Process the results to fetch block content if a specific post_id was requested
@@ -133,14 +106,7 @@ exports.handler = async (event, context) => {
  }
 
   // Handle the response based on whether a specific post_id was requested
-  if (post_id && blogPosts.length > 0) {
-    return {
-      statusCode: 200,
-      headers,
-      // Stringify the first element (the matching post)
-      body: JSON.stringify(blogPosts[0]),
-    };
-  } else if(blogPosts.length > 0) {
+  if(blogPosts.length > 0) {
     return {
       statusCode: 200,
       headers,
