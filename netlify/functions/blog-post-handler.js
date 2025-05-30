@@ -121,6 +121,7 @@ exports.handler = async (event, context) => {
     }
     
     return {
+      post_id,
       Name: properties.Name.title[0]?.plain_text || '',
       publicationDate: properties["Publication Date"].date?.start || '',
       summary: properties.Summary.rich_text[0]?.plain_text || '',
