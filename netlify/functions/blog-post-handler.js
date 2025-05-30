@@ -62,13 +62,10 @@ exports.handler = async (event, context) => {
     filter
   });
 
-  console.log('Notion API Response:', JSON.stringify(response, null, 2)); // Log the Notion API response
-
   // Process the results to fetch block content if a specific post_id was requested
  let blogPosts = [];
  if (response.results && response.results.length > 0) {
     blogPosts = await Promise.all(response.results.map(async (page) => {
-    // console.log('Post object:', JSON.stringify(page, null, 2)); // Add this line to log the post object
     const pageId = page.id;
     const properties = page.properties;
     let post_id = null;
@@ -77,57 +74,59 @@ exports.handler = async (event, context) => {
     }
 
     let content = '';
-    // Fetch blocks for the specific post requested
-    const blocksResponse = await notion.blocks.children.list({
-      block_id: pageId,
-      page_size: 100, // Adjust page size as needed
-    });
-    console.log("blocksResponse", blocksResponse);
-    // Placeholder for markdown conversion logic
-    // Convert Notion blocks to Markdown
-    content = blocksResponse.results.map(block => { // Use map for initial transformation
-      let blockContent = '';
-      switch (block.type) {
-        case 'paragraph':
-          blockContent = block.paragraph.rich_text.map(rt => rt.plain_text).join('');
-          break;
-        case 'heading_1':
-          blockContent = '# ' + block.heading_1.rich_text.map(rt => rt.plain_text).join('');
-          break;
-        case 'heading_2':
-          blockContent = '## ' + block.heading_2.rich_text.map(rt => rt.plain_text).join('');
-          break;
-        case 'heading_3':
-          blockContent = '### ' + block.heading_3.rich_text.map(rt => rt.plain_text).join('');
-          break;
-        case 'bulleted_list_item':
-          blockContent = '* ' + block.bulleted_list_item.rich_text.map(rt => rt.plain_text).join('');
-          break;
-        case 'numbered_list_item':
-          // Basic numbering, doesn't handle nested lists
-          blockContent = '1. ' + block.numbered_list_item.rich_text.map(rt => rt.plain_text).join('');
-          break;
-        case 'to_do':
-          blockContent = `- [${block.to_do.checked ? 'x' : ' '}] ` + block.to_do.rich_text.map(rt => rt.plain_text).join('');
-          break;
-        case 'quote':
-          blockContent = '> ' + block.quote.rich_text.map(rt => rt.plain_text).join('');
-          break;
-        case 'image':
-          const imageUrl = block.image.external?.url || block.image.file?.url;
-          if (imageUrl) {
-            blockContent = `![Image](${imageUrl})`;
-          }
-          break;
-        case 'code':
-          const codeContent = block.code.rich_text.map(rt => rt.plain_text).join('');
-          const codeLanguage = block.code.language || '';
-          blockContent = ''
-      }
-      // Add more block type conversions here
-      return blockContent; // Handle other block types or skip
-    }).join('\n\n'); // Join paragraphs with double newline
-
+    if(!event.queryStringParameters.post_id) {
+      // Fetch blocks for the specific post requested
+      const blocksResponse = await notion.blocks.children.list({
+        block_id: pageId,
+        page_size: 100, // Adjust page size as needed
+      });
+      console.log("blocksResponse", blocksResponse);
+      // Placeholder for markdown conversion logic
+      // Convert Notion blocks to Markdown
+      content = blocksResponse.results.map(block => { // Use map for initial transformation
+        let blockContent = '';
+        switch (block.type) {
+          case 'paragraph':
+            blockContent = block.paragraph.rich_text.map(rt => rt.plain_text).join('');
+            break;
+          case 'heading_1':
+            blockContent = '# ' + block.heading_1.rich_text.map(rt => rt.plain_text).join('');
+            break;
+          case 'heading_2':
+            blockContent = '## ' + block.heading_2.rich_text.map(rt => rt.plain_text).join('');
+            break;
+          case 'heading_3':
+            blockContent = '### ' + block.heading_3.rich_text.map(rt => rt.plain_text).join('');
+            break;
+          case 'bulleted_list_item':
+            blockContent = '* ' + block.bulleted_list_item.rich_text.map(rt => rt.plain_text).join('');
+            break;
+          case 'numbered_list_item':
+            // Basic numbering, doesn't handle nested lists
+            blockContent = '1. ' + block.numbered_list_item.rich_text.map(rt => rt.plain_text).join('');
+            break;
+          case 'to_do':
+            blockContent = `- [${block.to_do.checked ? 'x' : ' '}] ` + block.to_do.rich_text.map(rt => rt.plain_text).join('');
+            break;
+          case 'quote':
+            blockContent = '> ' + block.quote.rich_text.map(rt => rt.plain_text).join('');
+            break;
+          case 'image':
+            const imageUrl = block.image.external?.url || block.image.file?.url;
+            if (imageUrl) {
+              blockContent = `![Image](${imageUrl})`;
+            }
+            break;
+          case 'code':
+            const codeContent = block.code.rich_text.map(rt => rt.plain_text).join('');
+            const codeLanguage = block.code.language || '';
+            blockContent = ''
+        }
+        // Add more block type conversions here
+        return blockContent; // Handle other block types or skip
+      }).join('\n\n'); // Join paragraphs with double newline
+    }
+    
     return {
       Name: properties.Name.title[0]?.plain_text || '',
       publicationDate: properties["Publication Date"].date?.start || '',
