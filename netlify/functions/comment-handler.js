@@ -1,7 +1,7 @@
 const { Client } = require('@notionhq/client');
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
-const notionDatabaseId = process.env.NOTION_DATABASE_ID;
+const notionDatabaseId = process.env.NOTION_COMMENT_DATABASE_ID;
 
 exports.handler = async (event) => {
   const headers = {
@@ -59,7 +59,7 @@ async function handlePost(event, notion, notionDatabaseId, headers) {
         'commenter_email': { email: commenter_email },
         'comment_text': { rich_text: [{ text: { content: comment_text } }] },
         'comment_date': { date: { start: comment_date } },
-        'comment_approved': { checkbox: false }
+        'comment_approved': { checkbox: true }
       }
     };
 
